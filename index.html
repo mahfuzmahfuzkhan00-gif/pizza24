@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pizza 24 — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0d0d0d;
+  --card: #161616;
+  --card2: #1e1e1e;
+  --orange: #ff6a00;
+  --orange2: #ff9a3c;
+  --gold: #f5c842;
+  --red: #e03c3c;
+  --green: #2ecc71;
+  --text: #f0f0f0;
+  --muted: #888;
+  --border: #2a2a2a;
+  --radius: 14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+/* NAV */
+.topbar{background:#111;border-bottom:1px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--orange);letter-spacing:2px}
+.logo span{color:var(--gold)}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{background:none;border:none;color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .2s}
+.nav-tab:hover{color:var(--text);background:var(--card2)}
+.nav-tab.active{color:var(--orange);background:#ff6a0015}
+
+/* PAGES */
+.page{display:none;padding:1.5rem;max-width:1200px;margin:0 auto}
+.page.active{display:block}
+
+/* SECTION TITLE */
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--orange);letter-spacing:2px;margin-bottom:1.5rem}
+
+/* DASHBOARD CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--orange)}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* NEW ORDER */
+.order-layout{display:grid;grid-template-columns:1fr 360px;gap:1.5rem}
+@media(max-width:768px){.order-layout{grid-template-columns:1fr}}
+.menu-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.cart-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;position:sticky;top:80px;height:fit-content}
+.panel-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)}
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.cat-tab{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;cursor:pointer;font-size:13px;color:var(--muted);font-family:inherit;transition:all .2s}
+.cat-tab:hover,.cat-tab.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.menu-items{display:grid;gap:8px;max-height:500px;overflow-y:auto}
+.menu-item{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.menu-item:hover{border-color:var(--orange);background:#ff6a0010}
+.item-info .item-name{font-size:14px;font-weight:600;color:var(--text)}
+.item-info .item-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.item-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:80px}
+.item-price{font-size:14px;font-weight:600;color:var(--orange);white-space:nowrap}
+.size-sel{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--text);font-family:inherit;cursor:pointer}
+.add-btn{background:var(--orange);color:#fff;border:none;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
+.add-btn:hover{background:var(--orange2)}
+
+/* CUSTOMER INFO */
+.cust-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.inp{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none}
+.inp:focus{border-color:var(--orange)}
+.inp::placeholder{color:var(--muted)}
+
+/* CART */
+.cart-items{max-height:280px;overflow-y:auto;margin-bottom:1rem}
+.cart-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.cart-item-name{flex:1;color:var(--text)}
+.cart-item-price{color:var(--orange);font-weight:600;min-width:55px;text-align:right}
+.qty-ctrl{display:flex;align-items:center;gap:6px}
+.qty-btn{background:var(--card2);border:1px solid var(--border);border-radius:5px;width:24px;height:24px;cursor:pointer;color:var(--text);font-size:14px;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:var(--orange);border-color:var(--orange)}
+.cart-empty{color:var(--muted);font-size:13px;text-align:center;padding:2rem 0}
+.discount-row{display:flex;gap:8px;margin-bottom:1rem}
+.disc-inp{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none}
+.disc-inp::placeholder{color:var(--muted)}
+.disc-btn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:13px;color:var(--text);font-family:inherit}
+.disc-btn:hover{border-color:var(--orange);color:var(--orange)}
+.totals{background:var(--card2);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.total-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--muted)}
+.total-row.big{color:var(--text);font-weight:700;font-size:16px;margin-bottom:0;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.total-row.disc-line{color:var(--green)}
+.place-btn{background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;border:none;border-radius:10px;padding:12px;font-size:16px;font-weight:700;width:100%;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;transition:opacity .2s}
+.place-btn:hover{opacity:.85}
+.whatsapp-btn{background:#25D366;color:#fff;border:none;border-radius:10px;padding:10px;font-size:14px;font-weight:600;width:100%;cursor:pointer;font-family:inherit;margin-top:8px;transition:opacity .2s}
+.whatsapp-btn:hover{opacity:.85}
+.print-only-btn{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:20px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .2s;white-space:nowrap}
+.print-only-btn:hover{border-color:var(--orange);background:#ff6a0015}
+
+/* SALES */
+.period-tabs{display:flex;gap:6px;margin-bottom:1.5rem}
+.period-tab{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 18px;cursor:pointer;font-size:14px;color:var(--muted);font-family:inherit;transition:all .2s}
+.period-tab.active{background:var(--orange);border-color:var(--orange);color:#fff}
+.sales-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:600px){.sales-grid{grid-template-columns:1fr}}
+.sales-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.sales-title{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:1px}
+.order-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.order-row:last-child{border-bottom:none}
+.order-cust{color:var(--text);font-weight:500}
+.order-detail{color:var(--muted);font-size:12px;margin-top:2px}
+.order-amt{color:var(--orange);font-weight:700}
+.popular-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.popular-item:last-child{border-bottom:none}
+.pop-rank{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--border);min-width:28px}
+.pop-name{flex:1;font-size:13px;color:var(--text)}
+.pop-count{font-size:12px;color:var(--muted)}
+.pop-bar-wrap{width:80px;background:var(--card2);border-radius:4px;height:6px;overflow:hidden}
+.pop-bar{height:100%;background:var(--orange);border-radius:4px}
+
+/* CUSTOMERS */
+.cust-table{width:100%;border-collapse:collapse}
+.cust-table th{text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.cust-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px}
+.cust-table tr:hover td{background:var(--card2)}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-orange{background:#ff6a0020;color:var(--orange)}
+.badge-green{background:#2ecc7120;color:var(--green)}
+.print-btn{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 18px;cursor:pointer;font-size:14px;color:var(--text);font-family:inherit;margin-bottom:1rem;transition:all .2s}
+.print-btn:hover{border-color:var(--orange);color:var(--orange)}
+.pay-method{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;cursor:pointer;font-size:13px;color:var(--muted);font-family:inherit;font-weight:500;transition:all .2s;text-align:center}
+.pay-method:hover{border-color:var(--orange);color:var(--text)}
+.pay-method.active{border-color:var(--orange);background:#ff6a0018;color:var(--orange);font-weight:700}
+
+/* RECEIPT PRINT */
+@media print {
+  body *{visibility:hidden}
+  #receipt,#receipt *{visibility:visible}
+  #receipt{position:fixed;top:0;left:0;width:100%;background:#fff;color:#000;padding:20px;font-family:monospace}
+}
+#receipt{display:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:999;opacity:0;transform:translateY(20px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:var(--red)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Pizza<span>24</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')">📊 Dashboard</button>
+    <button class="nav-tab" onclick="showPage('neworder')">🍕 New Order</button>
+    <button class="nav-tab" onclick="showPage('sales')">💰 Sales</button>
+    <button class="nav-tab" onclick="showPage('customers')">👥 Customers</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="sec-title">Dashboard</div>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-label">Today's Sales</div>
+      <div class="stat-val" id="dash-today">৳0</div>
+      <div class="stat-sub" id="dash-today-orders">0 orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">This Week</div>
+      <div class="stat-val" id="dash-week">৳0</div>
+      <div class="stat-sub" id="dash-week-orders">0 orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">This Month</div>
+      <div class="stat-val" id="dash-month">৳0</div>
+      <div class="stat-sub" id="dash-month-orders">0 orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Customers</div>
+      <div class="stat-val" id="dash-custs">0</div>
+      <div class="stat-sub">unique numbers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-val" id="dash-total-orders">0</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Order Value</div>
+      <div class="stat-val" id="dash-avg">৳0</div>
+      <div class="stat-sub">per order</div>
+    </div>
+  </div>
+  <div class="sales-card" style="margin-bottom:1rem">
+    <div class="sales-title">🔥 Most Popular Items (All Time)</div>
+    <div id="dash-popular"></div>
+  </div>
+  <div class="sales-card">
+    <div class="sales-title">🕐 Recent Orders</div>
+    <div id="dash-recent"></div>
+  </div>
+</div>
+
+<!-- NEW ORDER -->
+<div class="page" id="page-neworder">
+  <div class="sec-title">New Order</div>
+  <div class="order-layout">
+    <div class="menu-panel">
+      <div class="panel-title">📋 Menu</div>
+      <div class="cat-tabs" id="cat-tabs"></div>
+      <div class="menu-items" id="menu-items"></div>
+    </div>
+    <div class="cart-panel">
+      <div class="panel-title">🛒 Cart</div>
+      <div class="cust-row">
+        <input class="inp" id="cust-name" placeholder="Customer Name"/>
+        <input class="inp" id="cust-phone" placeholder="Phone Number"/>
+      </div>
+      <div class="cart-items" id="cart-items"><div class="cart-empty">Cart is empty</div></div>
+      <div class="panel-title" style="margin-bottom:0.5rem;border:none;padding:0;font-size:14px">💳 Payment Method</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1rem">
+        <button class="pay-method active" id="pay-cash" onclick="setPayment('cash')">💵 Cash</button>
+        <button class="pay-method" id="pay-bkash" onclick="setPayment('bkash')">🔴 bKash</button>
+        <button class="pay-method" id="pay-nagad" onclick="setPayment('nagad')">🟠 Nagad</button>
+        <button class="pay-method" id="pay-rocket" onclick="setPayment('rocket')">🟣 Rocket</button>
+      </div>
+      <div class="discount-row">
+        <input class="disc-inp" id="coupon-inp" placeholder="Coupon Code"/>
+        <button class="disc-btn" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div class="totals">
+        <div class="total-row"><span>Subtotal</span><span id="subtotal">৳0</span></div>
+        <div class="total-row disc-line" id="disc-row" style="display:none"><span id="disc-label">Discount</span><span id="disc-amt">-৳0</span></div>
+        <div class="total-row big"><span>TOTAL</span><span id="total-amt">৳0</span></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px">
+        <button class="place-btn" onclick="placeOrder()">✅ PLACE ORDER</button>
+        <button class="print-only-btn" onclick="printCurrentCart()" title="Print Receipt">🖨️</button>
+      </div>
+      <button class="whatsapp-btn" onclick="sendWhatsApp()">📱 Send via WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALES -->
+<div class="page" id="page-sales">
+  <div class="sec-title">Sales Report</div>
+  <div class="period-tabs">
+    <button class="period-tab active" onclick="setSalesPeriod('daily',this)">Daily</button>
+    <button class="period-tab" onclick="setSalesPeriod('weekly',this)">Weekly</button>
+    <button class="period-tab" onclick="setSalesPeriod('monthly',this)">Monthly</button>
+  </div>
+  <div class="stat-grid" id="sales-stats" style="margin-bottom:1.5rem"></div>
+  <div class="sales-grid">
+    <div class="sales-card">
+      <div class="sales-title">📦 Orders</div>
+      <div id="sales-orders"></div>
+    </div>
+    <div class="sales-card">
+      <div class="sales-title">🔥 Popular Items</div>
+      <div id="sales-popular"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div class="sec-title">Customers</div>
+  <button class="print-btn" onclick="window.print()">🖨️ Print This Page</button>
+  <div class="sales-card">
+    <table class="cust-table" id="cust-table">
+      <thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Last Order</th></tr></thead>
+      <tbody id="cust-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RECEIPT -->
+<div id="receipt"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+const MENU = [
+  // Pizza
+  {id:1,cat:'Pizza',name:'L.A Pizza',desc:'Chicken, mushroom, onions, bell peppers, mozzarella',sizes:{8:350,10:420,12:490,14:590}},
+  {id:2,cat:'Pizza',name:'L.A Blaze',desc:'Beef, red onion, black olive, roasted garlic, mozzarella',sizes:{8:390,10:460,12:530,14:650}},
+  {id:3,cat:'Pizza',name:'Downtown Delight',desc:'Beef pepperoni, mushrooms, black olives, mozzarella',sizes:{8:420,10:490,12:530,14:680}},
+  {id:4,cat:'Pizza',name:'Santa Monica Supreme (BBQ)',desc:'BBQ chicken, black olive, tomato, mozzarella',sizes:{8:350,10:450,12:460,14:670}},
+  {id:5,cat:'Pizza',name:'Beverly Hills Bliss',desc:'Sausage, chicken ball, black olive, red bell pepper, mozzarella',sizes:{8:350,10:420,12:490,14:670}},
+  {id:6,cat:'Pizza',name:'Catalina Island Spicy',desc:'Naga chicken, sausage, chicken ball, capsicum, red onion, mozzarella, naga sauce',sizes:{8:350,10:420,12:490,14:670}},
+  {id:7,cat:'Pizza',name:'Changsha Fiesta',desc:'Beef bacon, sausage, capsicum, onion, BBQ sauce, mozzarella',sizes:{8:390,10:460,12:530,14:700}},
+  {id:8,cat:'Pizza',name:'Taste of Santa Barbara',desc:'Bell paper, tomato, onion, jalapeno, cheese',sizes:{8:350,10:420,12:490,14:670}},
+  // Premium
+  {id:9,cat:'Premium',name:'Seasonal Harvest — Beef+Chicken+Sausage+Pepperoni',desc:'Premium combo pizza',sizes:{8:440,10:510,12:590,14:750}},
+  {id:10,cat:'Premium',name:'Seasonal Harvest — Chicken+Beef Bacon+Sausage+Meatball',desc:'Premium combo pizza',sizes:{8:440,10:510,12:590,14:750}},
+  {id:11,cat:'Premium',name:'Seasonal Harvest — Beef Pepperoni+Naga Chicken+Roasted Garlic+Beef Bacon',desc:'Premium combo pizza',sizes:{8:440,10:510,12:590,14:750}},
+  {id:12,cat:'Premium',name:'Malibu Magic (Custom)',desc:'Whatever you want to add!',sizes:{8:450,10:540,12:660,14:800}},
+  // Wings
+  {id:13,cat:'Wings',name:'Chicken Wings',desc:'6 or 10 pcs',sizes:{'6pcs':210,'10pcs':360}},
+  {id:14,cat:'Wings',name:'BBQ Wings',desc:'6 or 10 pcs',sizes:{'6pcs':210,'10pcs':360}},
+  {id:15,cat:'Wings',name:'Crispy Wings',desc:'6 or 10 pcs',sizes:{'6pcs':210,'10pcs':360}},
+  {id:16,cat:'Wings',name:'Drumpsticks (Naga/BBQ/Crispy)',desc:'4 or 6 pcs',sizes:{'4pcs':260,'6pcs':360}},
+  // Sandwich
+  {id:17,cat:'Sandwich',name:'Club Sandwich',desc:'Chicken, vegetables, mayonnaise',sizes:{regular:180}},
+  {id:18,cat:'Sandwich',name:'Sub Sandwich',desc:'Chicken, mix vegetables, egg, mayonnaise',sizes:{regular:160}},
+  {id:19,cat:'Sandwich',name:'Grill Sandwich',desc:'Grill chicken, mix veg, mayonnaise, cheese',sizes:{regular:180}},
+  // Sides
+  {id:20,cat:'Sides',name:'24 Fry',desc:'French fries',sizes:{regular:90}},
+  {id:21,cat:'Sides',name:'Garlic French Fry',desc:'Garlic fries',sizes:{regular:100}},
+  {id:22,cat:'Sides',name:'24 Meatbox',desc:'Chicken, sausage, fries, sauce',sizes:{regular:140}},
+  {id:23,cat:'Sides',name:'Oven Baked Cheese Meatbox',desc:'Chicken, sausage, fries, cheese, sauce',sizes:{regular:170}},
+  {id:24,cat:'Sides',name:'24 Regular Wedges',desc:'',sizes:{regular:100}},
+  {id:25,cat:'Sides',name:'Naga Wedges',desc:'',sizes:{regular:120}},
+  {id:26,cat:'Sides',name:'24 Nachos Regular',desc:'',sizes:{regular:160}},
+  {id:27,cat:'Sides',name:'24 Nachos Special Tower',desc:'',sizes:{regular:220}},
+  // Pasta
+  {id:28,cat:'Pasta',name:'Santa Clarita Alfred',desc:'',sizes:{regular:230}},
+  {id:29,cat:'Pasta',name:'24 Special Oven Baked',desc:'',sizes:{regular:250}},
+  // Momo
+  {id:30,cat:'Momo',name:'Chicken Momo',desc:'4 or 8 pcs',sizes:{'4pcs':120,'8pcs':170}},
+  {id:31,cat:'Momo',name:'Beef Momo',desc:'4 or 8 pcs',sizes:{'4pcs':140,'8pcs':190}},
+  // Drinks
+  {id:32,cat:'Drinks',name:'Milk Shake',desc:'',sizes:{regular:160}},
+  {id:33,cat:'Drinks',name:'Oreo Shake',desc:'',sizes:{regular:160}},
+  {id:34,cat:'Drinks',name:'Vanilla Shake',desc:'',sizes:{regular:160}},
+  {id:35,cat:'Drinks',name:'Lemonade',desc:'',sizes:{regular:80}},
+  {id:36,cat:'Drinks',name:'Chocolate Cold Coffee',desc:'',sizes:{regular:150}},
+  {id:37,cat:'Drinks',name:'Hot Coffee',desc:'',sizes:{regular:100}},
+  {id:38,cat:'Drinks',name:'Water (500ml)',desc:'',sizes:{regular:20}},
+  {id:39,cat:'Drinks',name:'Soft Drinks',desc:'',sizes:{regular:30}},
+  // Dips
+  {id:40,cat:'Dips',name:'Tomato Ketchup',desc:'2 free with any pizza',sizes:{regular:20}},
+  {id:41,cat:'Dips',name:'Mayonnaise',desc:'',sizes:{regular:20}},
+  {id:42,cat:'Dips',name:'Garlic Dip',desc:'',sizes:{regular:20}},
+  {id:43,cat:'Dips',name:'Special Mayo Dip',desc:'',sizes:{regular:20}},
+  {id:44,cat:'Dips',name:'Spicy Naga Dip',desc:'',sizes:{regular:20}},
+];
+
+const COUPONS = {
+  'PIZZA10': {type:'pct', val:10, label:'10% off'},
+  'PIZZA50': {type:'flat', val:50, label:'৳50 off'},
+  'VIP20':   {type:'pct', val:20, label:'20% off'},
+  'WELCOME': {type:'flat', val:100, label:'৳100 off'},
+};
+
+let cart = [];
+let appliedCoupon = null;
+let currentCat = 'Pizza';
+let salesPeriod = 'daily';
+let selectedPayment = 'cash';
+let lastOrder = null;
+
+function setPayment(method){
+  selectedPayment = method;
+  document.querySelectorAll('.pay-method').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pay-'+method).classList.add('active');
+}
+
+// ===================== STORAGE =====================
+function loadOrders() { try { return JSON.parse(localStorage.getItem('p24_orders') || '[]'); } catch(e){return[];} }
+function saveOrders(o) { localStorage.setItem('p24_orders', JSON.stringify(o)); }
+function loadCustomers() { try { return JSON.parse(localStorage.getItem('p24_customers') || '{}'); } catch(e){return{};} }
+function saveCustomers(c) { localStorage.setItem('p24_customers', JSON.stringify(c)); }
+
+// ===================== NAV =====================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='dashboard') renderDashboard();
+  if(id==='sales') renderSales();
+  if(id==='customers') renderCustomers();
+}
+
+// ===================== MENU =====================
+function initMenu() {
+  const cats = [...new Set(MENU.map(m=>m.cat))];
+  const ct = document.getElementById('cat-tabs');
+  ct.innerHTML = cats.map(c=>`<button class="cat-tab${c===currentCat?' active':''}" onclick="filterCat('${c}',this)">${c}</button>`).join('');
+  renderMenuItems();
+}
+
+function filterCat(cat, el) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderMenuItems();
+}
+
+function renderMenuItems() {
+  const items = MENU.filter(m=>m.cat===currentCat);
+  document.getElementById('menu-items').innerHTML = items.map(item => {
+    const sizes = Object.keys(item.sizes);
+    const sizeOpts = sizes.length > 1
+      ? `<select class="size-sel" id="sz-${item.id}">${sizes.map(s=>`<option value="${s}">${s} — ৳${item.sizes[s]}</option>`).join('')}</select>`
+      : `<span class="item-price">৳${item.sizes[sizes[0]]}</span>`;
+    return `<div class="menu-item">
+      <div class="item-info">
+        <div class="item-name">${item.name}</div>
+        ${item.desc?`<div class="item-desc">${item.desc}</div>`:''}
+      </div>
+      <div class="item-right">
+        ${sizeOpts}
+        <button class="add-btn" onclick="addToCart(${item.id})">+ Add</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addToCart(id) {
+  const item = MENU.find(m=>m.id===id);
+  const sizes = Object.keys(item.sizes);
+  let size = sizes[0], price = item.sizes[sizes[0]];
+  if(sizes.length > 1) {
+    const sel = document.getElementById('sz-'+id);
+    if(sel){ size=sel.value; price=item.sizes[size]; }
+  }
+  const key = id+'-'+size;
+  const ex = cart.find(c=>c.key===key);
+  if(ex){ ex.qty++; }
+  else { cart.push({key,id,name:item.name,size,price,qty:1}); }
+  renderCart();
+  showToast('Added: '+item.name+' ('+size+')');
+}
+
+function renderCart() {
+  const el = document.getElementById('cart-items');
+  if(!cart.length){ el.innerHTML='<div class="cart-empty">Cart is empty</div>'; }
+  else {
+    el.innerHTML = cart.map(c=>`<div class="cart-item">
+      <div class="cart-item-name">${c.name}<br><small style="color:var(--muted)">${c.size}</small></div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty('${c.key}',-1)">−</button>
+        <span style="font-size:13px;min-width:16px;text-align:center">${c.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${c.key}',1)">+</button>
+      </div>
+      <div class="cart-item-price">৳${c.price*c.qty}</div>
+    </div>`).join('');
+  }
+  updateTotals();
+}
+
+function changeQty(key,d){
+  const i=cart.findIndex(c=>c.key===key);
+  if(i<0) return;
+  cart[i].qty+=d;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  renderCart();
+}
+
+function updateTotals(){
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  let disc=0,discLabel='Discount';
+  if(appliedCoupon){
+    const cp=COUPONS[appliedCoupon];
+    if(cp.type==='pct'){disc=Math.round(sub*cp.val/100);discLabel=cp.label;}
+    else{disc=Math.min(cp.val,sub);discLabel=cp.label;}
+  }
+  const total=sub-disc;
+  document.getElementById('subtotal').textContent='৳'+sub;
+  document.getElementById('total-amt').textContent='৳'+total;
+  if(disc>0){
+    document.getElementById('disc-row').style.display='flex';
+    document.getElementById('disc-label').textContent=discLabel;
+    document.getElementById('disc-amt').textContent='-৳'+disc;
+  } else { document.getElementById('disc-row').style.display='none'; }
+}
+
+function applyCoupon(){
+  const code=document.getElementById('coupon-inp').value.trim().toUpperCase();
+  if(COUPONS[code]){ appliedCoupon=code; showToast('Coupon applied: '+COUPONS[code].label); }
+  else { appliedCoupon=null; showToast('Invalid coupon code','error'); }
+  updateTotals();
+}
+
+function placeOrder(){
+  if(!cart.length){ showToast('Cart is empty!','error'); return; }
+  const name=document.getElementById('cust-name').value.trim()||'Guest';
+  const phone=document.getElementById('cust-phone').value.trim();
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  let disc=0;
+  if(appliedCoupon){const cp=COUPONS[appliedCoupon];disc=cp.type==='pct'?Math.round(sub*cp.val/100):Math.min(cp.val,sub);}
+  const total=sub-disc;
+  const payLabels={cash:'💵 Cash',bkash:'🔴 bKash',nagad:'🟠 Nagad',rocket:'🟣 Rocket'};
+  const order={id:Date.now(),date:new Date().toISOString(),name,phone,items:[...cart],subtotal:sub,discount:disc,total,coupon:appliedCoupon||'',payment:selectedPayment,paymentLabel:payLabels[selectedPayment]};
+  const orders=loadOrders();
+  orders.push(order);
+  saveOrders(orders);
+  lastOrder = order;
+  // update customers
+  if(phone){
+    const custs=loadCustomers();
+    if(!custs[phone]){custs[phone]={name,phone,orders:0,total:0,lastOrder:''};}
+    custs[phone].orders++;custs[phone].total+=total;custs[phone].lastOrder=order.date;custs[phone].name=name;
+    saveCustomers(custs);
+  }
+  printReceipt(order);
+  cart=[];appliedCoupon=null;
+  document.getElementById('cust-name').value='';
+  document.getElementById('cust-phone').value='';
+  document.getElementById('coupon-inp').value='';
+  renderCart();
+  showToast('Order placed! Printing receipt...');
+}
+
+function printReceipt(order){
+  const lines=order.items.map(i=>`${i.name} (${i.size}) x${i.qty} = ৳${i.price*i.qty}`).join('\n');
+  const rec=document.getElementById('receipt');
+  rec.style.display='block';
+  rec.innerHTML=`<div style="font-family:monospace;max-width:300px;margin:0 auto;padding:20px;background:#fff;color:#000">
+    <h2 style="text-align:center;font-size:22px;margin-bottom:4px">PIZZA 24</h2>
+    <p style="text-align:center;font-size:12px">Deliciously, Affordable, Always Fresh</p>
+    <p style="text-align:center;font-size:11px">1 Momin Saroni, North Ibrahimpur, Mirpur-14, Dhaka</p>
+    <p style="text-align:center;font-size:11px">01338-199427</p>
+    <hr style="border:1px dashed #000;margin:10px 0"/>
+    <p style="font-size:12px">Date: ${new Date(order.date).toLocaleString()}</p>
+    <p style="font-size:12px">Customer: ${order.name}</p>
+    ${order.phone?`<p style="font-size:12px">Phone: ${order.phone}</p>`:''}
+    ${order.coupon?`<p style="font-size:12px">Coupon: ${order.coupon}</p>`:''}
+    <hr style="border:1px dashed #000;margin:10px 0"/>
+    ${order.items.map(i=>`<p style="font-size:12px;display:flex;justify-content:space-between"><span>${i.name} (${i.size}) x${i.qty}</span><span>৳${i.price*i.qty}</span></p>`).join('')}
+    <hr style="border:1px dashed #000;margin:10px 0"/>
+    <p style="font-size:13px;display:flex;justify-content:space-between"><span>Subtotal</span><span>৳${order.subtotal}</span></p>
+    ${order.discount?`<p style="font-size:13px;display:flex;justify-content:space-between"><span>Discount</span><span>-৳${order.discount}</span></p>`:''}
+    <p style="font-size:13px;display:flex;justify-content:space-between;margin-top:6px;font-weight:bold;color:#e65c00"><span>Payment</span><span>${order.paymentLabel}</span></p>
+    <p style="font-size:15px;font-weight:bold;display:flex;justify-content:space-between;margin-top:6px"><span>TOTAL</span><span>৳${order.total}</span></p>
+    <hr style="border:1px dashed #000;margin:10px 0"/>
+    <p style="text-align:center;font-size:12px">Thank you! Pay First</p>
+    <p style="text-align:center;font-size:11px">Join us on Facebook</p>
+  </div>`;
+  setTimeout(()=>{window.print();rec.style.display='none';},300);
+}
+
+function printCurrentCart(){
+  if(!cart.length){showToast('Cart is empty!','error');return;}
+  const name=document.getElementById('cust-name').value.trim()||'Guest';
+  const phone=document.getElementById('cust-phone').value.trim();
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  let disc=0;
+  if(appliedCoupon){const cp=COUPONS[appliedCoupon];disc=cp.type==='pct'?Math.round(sub*cp.val/100):Math.min(cp.val,sub);}
+  const total=sub-disc;
+  const payLabels={cash:'💵 Cash',bkash:'🔴 bKash',nagad:'🟠 Nagad',rocket:'🟣 Rocket'};
+  const tempOrder={id:Date.now(),date:new Date().toISOString(),name,phone,items:[...cart],subtotal:sub,discount:disc,total,coupon:appliedCoupon||'',payment:selectedPayment,paymentLabel:payLabels[selectedPayment]};
+  printReceipt(tempOrder);
+}
+
+function printLastReceipt(){
+  if(!lastOrder){
+    // try from storage
+    const orders=loadOrders();
+    if(!orders.length){showToast('কোনো order নেই এখনও!','error');return;}
+    lastOrder=orders[orders.length-1];
+  }
+  printReceipt(lastOrder);
+}
+
+function sendWhatsApp(){
+  if(!cart.length){showToast('Cart is empty!','error');return;}
+  const name=document.getElementById('cust-name').value.trim()||'Guest';
+  const phone=document.getElementById('cust-phone').value.trim();
+  const sub=cart.reduce((a,c)=>a+c.price*c.qty,0);
+  let disc=0;
+  if(appliedCoupon){const cp=COUPONS[appliedCoupon];disc=cp.type==='pct'?Math.round(sub*cp.val/100):Math.min(cp.val,sub);}
+  const total=sub-disc;
+  const payLabels={cash:'💵 Cash',bkash:'🔴 bKash',nagad:'🟠 Nagad',rocket:'🟣 Rocket'};
+  let msg=`🍕 *PIZZA 24 — New Order*\n\n`;
+  msg+=`👤 Customer: ${name}\n`;
+  if(phone) msg+=`📱 Phone: ${phone}\n`;
+  msg+=`💳 Payment: ${payLabels[selectedPayment]}\n`;
+  msg+=`\n📋 *Order Details:*\n`;
+  cart.forEach(c=>{ msg+=`• ${c.name} (${c.size}) x${c.qty} = ৳${c.price*c.qty}\n`; });
+  msg+=`\n💰 Subtotal: ৳${sub}`;
+  if(disc) msg+=`\n🏷️ Discount: -৳${disc}`;
+  msg+=`\n✅ *TOTAL: ৳${total}*`;
+  msg+=`\n\n📍 1 Momin Saroni, North Ibrahimpur, Mirpur-14`;
+  msg+=`\n⏰ ${new Date().toLocaleString()}`;
+  const waPhone='8801338199427';
+  window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(){
+  const orders=loadOrders();
+  const now=new Date();
+  const toStr=d=>new Date(d).toDateString();
+  const today=orders.filter(o=>toStr(o.date)===toStr(now));
+  const weekAgo=new Date(now-7*864e5);
+  const week=orders.filter(o=>new Date(o.date)>=weekAgo);
+  const monthAgo=new Date(now.getFullYear(),now.getMonth(),1);
+  const month=orders.filter(o=>new Date(o.date)>=monthAgo);
+  const sum=arr=>arr.reduce((a,o)=>a+o.total,0);
+  document.getElementById('dash-today').textContent='৳'+sum(today);
+  document.getElementById('dash-today-orders').textContent=today.length+' orders';
+  document.getElementById('dash-week').textContent='৳'+sum(week);
+  document.getElementById('dash-week-orders').textContent=week.length+' orders';
+  document.getElementById('dash-month').textContent='৳'+sum(month);
+  document.getElementById('dash-month-orders').textContent=month.length+' orders';
+  const custs=loadCustomers();
+  document.getElementById('dash-custs').textContent=Object.keys(custs).length;
+  document.getElementById('dash-total-orders').textContent=orders.length;
+  const avg=orders.length?Math.round(sum(orders)/orders.length):0;
+  document.getElementById('dash-avg').textContent='৳'+avg;
+  renderPopular('dash-popular',orders);
+  const recent=orders.slice(-5).reverse();
+  document.getElementById('dash-recent').innerHTML=recent.length?recent.map(o=>`<div class="order-row"><div><div class="order-cust">${o.name}</div><div class="order-detail">${new Date(o.date).toLocaleString()} · ${o.paymentLabel||'💵 Cash'}</div></div><div class="order-amt">৳${o.total}</div></div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:1rem 0">No orders yet</div>';
+}
+
+function renderPopular(elId,orders){
+  const counts={};
+  orders.forEach(o=>o.items.forEach(i=>{counts[i.name]=(counts[i.name]||0)+i.qty;}));
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const max=sorted[0]?sorted[0][1]:1;
+  document.getElementById(elId).innerHTML=sorted.length?sorted.map(([name,cnt],i)=>`<div class="popular-item"><div class="pop-rank">${i+1}</div><div class="pop-name">${name}</div><div class="pop-bar-wrap"><div class="pop-bar" style="width:${Math.round(cnt/max*100)}%"></div></div><div class="pop-count">${cnt}x</div></div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:1rem 0">No data yet</div>';
+}
+
+// ===================== SALES =====================
+function setSalesPeriod(p,el){
+  salesPeriod=p;
+  document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderSales();
+}
+
+function renderSales(){
+  const orders=loadOrders();
+  const now=new Date();
+  let filtered;
+  if(salesPeriod==='daily'){const d=now.toDateString();filtered=orders.filter(o=>new Date(o.date).toDateString()===d);}
+  else if(salesPeriod==='weekly'){const w=new Date(now-7*864e5);filtered=orders.filter(o=>new Date(o.date)>=w);}
+  else{const m=new Date(now.getFullYear(),now.getMonth(),1);filtered=orders.filter(o=>new Date(o.date)>=m);}
+  const total=filtered.reduce((a,o)=>a+o.total,0);
+  const disc=filtered.reduce((a,o)=>a+o.discount,0);
+  document.getElementById('sales-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-val">৳${total}</div></div>
+    <div class="stat-card"><div class="stat-label">Orders</div><div class="stat-val">${filtered.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Order</div><div class="stat-val">৳${filtered.length?Math.round(total/filtered.length):0}</div></div>
+    <div class="stat-card"><div class="stat-label">Discounts Given</div><div class="stat-val">৳${disc}</div></div>`;
+  document.getElementById('sales-orders').innerHTML=filtered.length?filtered.slice().reverse().map(o=>`<div class="order-row"><div><div class="order-cust">${o.name} ${o.phone?'· '+o.phone:''}</div><div class="order-detail">${new Date(o.date).toLocaleString()} · ${o.paymentLabel||'💵 Cash'}</div></div><div class="order-amt">৳${o.total}</div></div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:1rem 0">No orders in this period</div>';
+  renderPopular('sales-popular',filtered);
+}
+
+// ===================== CUSTOMERS =====================
+function renderCustomers(){
+  const custs=loadCustomers();
+  const list=Object.values(custs).sort((a,b)=>b.total-a.total);
+  document.getElementById('cust-tbody').innerHTML=list.length?list.map((c,i)=>`<tr><td>${i+1}</td><td>${c.name}</td><td>${c.phone}</td><td><span class="badge badge-orange">${c.orders} orders</span></td><td style="color:var(--orange);font-weight:700">৳${c.total}</td><td style="color:var(--muted);font-size:12px">${new Date(c.lastOrder).toLocaleDateString()}</td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:2rem">No customers yet</td></tr>';
+}
+
+// ===================== TOAST =====================
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(type?' '+type:'');
+  void t.offsetWidth;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ===================== INIT =====================
+initMenu();
+renderDashboard();
+</script>
+</body>
+</html>
